@@ -19,11 +19,13 @@ class ServerTest < RackMiniTest
     shorten SAMPLE_URL
     data = JSON.parse(last_response.body)
 
+    refute_nil data['short_url']
+
     get('/' + data['short_url'])
     assert last_response.redirect?
 
     follow_redirect!
-    assert_equal 'https://github.com/', last_request.url
+    assert_match /#{Regexp.escape(SAMPLE_URL)}/, last_request.url
   end
 
   def test_new_doesnt_create_anything_if_the_url_already_exists

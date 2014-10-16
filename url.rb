@@ -6,6 +6,10 @@ class Url
   # The default length of the hashed version of an url.
   MINIMUM_HEX_LENGTH = 6
 
+  # Reserved URLs are parts of the URL that are reserved for the API (e.g.
+  # '/new') and can't be used as hashes.
+  RESERVED_URLS = %w(new)
+
   # Create a new URL based on a `long_url`. `redis_connection` is used to pass a
   # Redis connection to the new object.
   # @param [String] long_url
@@ -33,6 +37,8 @@ class Url
   # @return [String] The newly created short url
   def shorten(length = MINIMUM_HEX_LENGTH)
     short = hashed(length).hex.base62_encode
+
+    shorten(length + 1) if RESERVED_URLS.include?(short)
 
     # If such short url doesn't exist, create it and return early.
     if !@redis.exists(short)
