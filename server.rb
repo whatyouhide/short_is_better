@@ -1,10 +1,6 @@
-require 'bundler/setup'
-require 'sinatra/base'
 require 'json'
-require 'redis'
 
-require_relative 'url'
-
+# The main server class. This can be run as a Rack application.
 class Server < Sinatra::Base
   # Initialize the app and connect to Redis.
   def initialize(app = nil)
@@ -17,9 +13,12 @@ class Server < Sinatra::Base
   # Params: url={encoded_url}
   post '/new' do
     long_url = URI.decode(params[:url])
-    invalid_url_error(long_url) unless valid_url?(long_url)
-    short_url = create_new(long_url)
-    respond_with_json short_url: short_url, original_url: long_url
+
+    if valid_url?(long_url)
+      respond_with_json short_url: create_new(long_url), original_url: long_url
+    else
+      invalid_url_error(long_url)
+    end
   end
 
   # Redirect to a regular URL from a short url.

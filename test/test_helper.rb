@@ -2,12 +2,13 @@ ENV['RACK_ENV'] = 'test'
 
 require 'minitest/autorun'
 require 'minitest/pride'
-require 'rack/test'
-require 'fakeredis'
+require 'bundler/setup'
 
-require_relative '../server'
+Bundler.require(:test)
 
-class RackMiniTest < Minitest::Test
+require_relative '../main'
+
+class RackMiniTest < MiniTest::Unit::TestCase
   include Rack::Test::Methods
 
   def app

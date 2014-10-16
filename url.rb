@@ -1,5 +1,4 @@
 require 'digest'
-require 'base62'
 
 # An Url object encapsulates a regular URL and provides facilities for creating
 # a shortened version of that URL and storing that into a given Redis db.

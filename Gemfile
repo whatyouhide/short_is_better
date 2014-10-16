@@ -1,8 +1,11 @@
 source 'https://rubygems.org'
 
-gem 'sinatra'
+gem 'sinatra', require: 'sinatra/base'
 gem 'redis'
-gem 'fakeredis'
-gem 'rack-test'
-gem 'json'
 gem 'base62'
+gem 'thin'
+
+group :test do
+  gem 'rack-test', require: 'rack/test'
+  gem 'fakeredis'
+end
