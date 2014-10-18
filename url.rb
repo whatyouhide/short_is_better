@@ -10,6 +10,9 @@ class Url
   # '/new') and can't be used as hashes.
   RESERVED_URLS = %w(new)
 
+  alphanumeric = (('a'..'z').to_a + ('A'..'Z').to_a + (0..9).to_a)
+  BASE = alphanumeric - %w(0 O I l)
+
   # Create a new URL based on a `long_url`. `redis_connection` is used to pass a
   # Redis connection to the new object.
   # @param [String] long_url
@@ -36,7 +39,7 @@ class Url
   #   strictly related to the lenght of the shortened URL.
   # @return [String] The newly created short url
   def shorten(length = MINIMUM_HEX_LENGTH)
-    short = hashed(length).hex.base62_encode
+    # short = hashed(length).hex.b(10).to_s(BASE)
 
     shorten(length + 1) if RESERVED_URLS.include?(short)
 

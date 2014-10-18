@@ -4,9 +4,9 @@ require 'minitest/autorun'
 require 'minitest/pride'
 require 'bundler/setup'
 
-Bundler.require(:test)
+Bundler.require(:default, :test)
 
-require_relative '../main'
+require_relative '../server'
 
 class RackMiniTest < MiniTest::Unit::TestCase
   include Rack::Test::Methods

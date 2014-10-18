@@ -1,4 +1,5 @@
 require 'json'
+require_relative 'url'
 
 # The main server class. This can be run as a Rack application.
 class Server < Sinatra::Base
