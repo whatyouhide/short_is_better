@@ -1,0 +1,11 @@
+urls:
+  - https://github.com
+  - https://ciao.com/query?param=value&other_param=other_value
+  - http://foo.bar
+  - http://www.wwwisold.com
+  - ftp://ftp.mit.edu
+
+custom_urls:
+  pizza: http://pizza.com
+  zzaz: https://www.i.love.pizza.com
+  i: ftp://i-am-the-danger.life

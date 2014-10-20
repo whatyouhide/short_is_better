@@ -2,13 +2,13 @@ require 'digest'
 
 # An Url object encapsulates a regular URL and provides facilities for creating
 # a shortened version of that URL and storing that into a given Redis db.
-class Url
+class ShortIsBetter::Url
   # The default length of the hashed version of an url.
   MINIMUM_SHORT_URL_LENGTH = 4
 
   # Reserved URLs are parts of the URL that are reserved for the API (e.g.
-  # '/new') and can't be used as hashes.
-  RESERVED_URLS = %w(new)
+  # '/api') and can't be used as hashes.
+  RESERVED_URLS = %w(api)
 
   ALLOWED_CHARS = (
     ('a'..'z').to_a +
