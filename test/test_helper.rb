@@ -1,14 +1,16 @@
 ENV['RACK_ENV'] = 'test'
 
-require 'minitest/autorun'
-require 'minitest/pride'
 require 'bundler/setup'
-
 Bundler.require(:default, :test)
 
 require_relative '../server'
 
-class RackMiniTest < MiniTest::Unit::TestCase
+# Change the default Minitest reporter.
+Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
+
+# Simple test class that includes Rack test methods and defines the `app`
+# method.
+class RackMiniTest < Minitest::Test
   include Rack::Test::Methods
 
   def app

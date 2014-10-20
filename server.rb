@@ -14,12 +14,9 @@ class Server < Sinatra::Base
   # Params: url={encoded_url}
   post '/new' do
     long_url = URI.decode(params[:url])
-
-    if valid_url?(long_url)
-      respond_with_json short_url: create_new(long_url), original_url: long_url
-    else
-      invalid_url_error(long_url)
-    end
+    prevent_invalid_url!(long_url)
+    short_url = create_new(long_url)
+    json short_url: short_url, original_url: long_url
   end
 
   # Redirect to a regular URL from a short url.
@@ -31,18 +28,11 @@ class Server < Sinatra::Base
 
   private
 
-  # Respond to the current request with a JSON representation of `hash_data`.
-  # This method also sets the content type to 'application/json'.
-  # @param [Hash] hash_data A, well, hash of data.
-  # @return [void]
-  def respond_with_json(hash_data)
+  def json(hash)
     content_type :json
-    body hash_data.to_json
+    body hash.to_json
   end
 
-  # Create a new short url and return it.
-  # @param [String] long_url
-  # @return [String]
   def create_new(long_url)
     url = Url.new(long_url, @redis)
     short_url = url.shorten
@@ -50,18 +40,9 @@ class Server < Sinatra::Base
     short_url
   end
 
-  # Halt with a 404 error and a custom message for the given (supposedly
-  # invalid) `url`.
-  # @param [String] url
-  # @return [void]
-  def invalid_url_error(url)
-    error status_code(:bad_request), "#{url} isn't a valid URL"
-  end
-
-  # Return `true` if `url` is a valid URL, `false` otherwise.
-  # @param [String] url
-  # @return [bool]
-  def valid_url?(url)
-    url =~ /\A#{URI::regexp}\z/
+  def prevent_invalid_url!(url)
+    return if url =~ /\A#{URI::regexp}\z/
+    json message: "#{url} isn't a valid URL"
+    error status_code(:bad_request)
   end
 end

@@ -4,14 +4,18 @@ require 'digest'
 # a shortened version of that URL and storing that into a given Redis db.
 class Url
   # The default length of the hashed version of an url.
-  MINIMUM_HEX_LENGTH = 6
+  MINIMUM_SHORT_URL_LENGTH = 4
 
   # Reserved URLs are parts of the URL that are reserved for the API (e.g.
   # '/new') and can't be used as hashes.
   RESERVED_URLS = %w(new)
 
-  alphanumeric = (('a'..'z').to_a + ('A'..'Z').to_a + (0..9).to_a)
-  BASE = alphanumeric - %w(0 O I l)
+  ALLOWED_CHARS = (
+    ('a'..'z').to_a +
+    ('A'..'Z').to_a +
+    (0..9).to_a -
+    %w(0 O I l)
+  )
 
   # Create a new URL based on a `long_url`. `redis_connection` is used to pass a
   # Redis connection to the new object.
@@ -26,9 +30,11 @@ class Url
   # Actually, return only the first `length` characters in the hash.
   # @param [Fixnum] length The length of the resulting digest
   # @return [String]
-  def hashed(length)
-    @digest ||= Digest::MD5.hexdigest(@long)
-    @digest.slice(0, length)
+  def hashed(length, charset = ALLOWED_CHARS)
+    @hex_digest ||= Digest::MD5.hexdigest(@long)
+    @stream ||= MothereffingBases[@hex_digest].in_hex.to_base(charset)
+
+    @stream.slice(0, length)
   end
 
   # Shorten the current URL. If the same URL is in the database, it'll have the
@@ -38,8 +44,8 @@ class Url
   # @param [Fixnum] length The lenght of the underlying hash, which is not
   #   strictly related to the lenght of the shortened URL.
   # @return [String] The newly created short url
-  def shorten(length = MINIMUM_HEX_LENGTH)
-    # short = hashed(length).hex.b(10).to_s(BASE)
+  def shorten(length = MINIMUM_SHORT_URL_LENGTH)
+    short = hashed(length)
 
     shorten(length + 1) if RESERVED_URLS.include?(short)
 
