@@ -1,6 +1,8 @@
 require_relative 'test_helper'
 
 class ApiTest < RackTest
+  parallelize_me!
+
   app ShortIsBetter::Api
 
   SAMPLE_URL = 'https://github.com'
@@ -39,9 +41,9 @@ class ApiTest < RackTest
   end
 
   def test_custom_short_urls_are_allowed
-    shorten url: SAMPLE_URL, short_url: 'pizza'
+    shorten url: SAMPLE_URL, short_url: 'maccheroni'
     assert_equal 201, last_response.status
-    assert_equal responded_json['short_url'], 'pizza'
+    assert_equal responded_json['short_url'], 'maccheroni'
   end
 
   def test_fails_if_the_custom_url_is_already_taken
