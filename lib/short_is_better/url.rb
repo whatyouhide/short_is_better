@@ -32,7 +32,7 @@ class ShortIsBetter::Url
   # @return [String]
   def hashed(length, charset = ALLOWED_CHARS)
     @hex_digest ||= Digest::MD5.hexdigest(@long)
-    @stream ||= MothereffingBases[@hex_digest].in_hex.to_base(charset)
+    @stream ||= Bases[@hex_digest].in_hex.to_base(charset)
 
     @stream.slice(0, length)
   end

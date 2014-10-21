@@ -1,6 +1,4 @@
-require 'bundler/setup'
-Bundler.require(:default)
-require_relative 'lib/short_is_better'
+require_relative './main'
 
 use Rack::Reloader, 0
 

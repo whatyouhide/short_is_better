@@ -1,33 +1,37 @@
 require_relative 'test_helper'
+require 'securerandom'
 
 class ApiTest < RackTest
   parallelize_me!
-
   app ShortIsBetter::Api
 
   SAMPLE_URL = 'https://github.com'
 
   def test_created_when_a_url_is_created
     shorten url: unique_url
-    assert_equal 201, last_response.status
+    assert_last_status 201
     refute_nil responded_json['short_url']
   end
 
   def test_doesnt_recreate_an_already_existing_url
-    urls = Array.new(10) { unique_url }.uniq
+    urls = Array.new(15) { unique_url }.uniq
 
     urls.each do |url|
       shorten url: url
       previous_short_url = responded_json['short_url']
+      assert_last_status 201
+
       shorten url: url
-      assert last_response.ok?
-      assert_equal responded_json['short_url'], previous_short_url
+      new_short_url = responded_json['short_url']
+      assert_last_status 200
+
+      assert_equal new_short_url, previous_short_url
     end
   end
 
   def test_fails_if_no_url_is_given
     post '/api/v1/new'
-    assert last_response.bad_request?
+    assert_last_status 400
   end
 
   def test_fails_if_the_url_isnt_well_formed
@@ -35,14 +39,14 @@ class ApiTest < RackTest
 
     bad_urls.each do |url|
       shorten url: url
-      assert last_response.bad_request?
+      assert_last_status 400
       refute_nil responded_json['error']
     end
   end
 
   def test_custom_short_urls_are_allowed
     shorten url: SAMPLE_URL, short_url: 'maccheroni'
-    assert_equal 201, last_response.status
+    assert_last_status 201
     assert_equal responded_json['short_url'], 'maccheroni'
   end
 
@@ -52,7 +56,7 @@ class ApiTest < RackTest
 
     # Assert there's a 409 Conflict.
     refute last_response.successful?
-    assert_equal 409, last_response.status
+    assert_last_status 409
     refute_nil responded_json['error']
   end
 
@@ -63,7 +67,7 @@ class ApiTest < RackTest
   end
 
   def unique_url
-    SAMPLE_URL + '/' + rand(0xffffffff).to_s + (Time.now.to_i % 100000).to_s
+    SAMPLE_URL + '/' + SecureRandom.hex
   end
 
   def responded_json

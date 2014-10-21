@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 gem 'sinatra', require: 'sinatra/base'
 gem 'redis'
-gem 'mothereffing_bases', '~> 1'
+gem 'bases', '~> 1'
 gem 'thin'
 gem 'grape'
 
@@ -15,4 +15,5 @@ end
 
 group :development do
   gem 'rake'
+  gem 'pry', require: false
 end

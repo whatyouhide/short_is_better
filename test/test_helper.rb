@@ -49,4 +49,9 @@ class RackTest < Minitest::Test
       @fixtures[short] = long
     end
   end
+
+  def assert_last_status(status)
+    assert last_response.status == status,
+      "last_response.status is #{last_response.status} instead of #{status}"
+  end
 end
