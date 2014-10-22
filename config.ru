@@ -1,8 +1,7 @@
 require_relative './main'
+require_relative 'lib/subdomain_mapper'
 
-use Rack::Reloader, 0
+require 'rack/lobster'
 
-run Rack::Cascade.new([
-  ShortIsBetter::Api,
-  ShortIsBetter::MainServer
-])
+for_subdomain /^api\./, run: Rack::Lobster.new
+run ShortIsBetter::MainServer

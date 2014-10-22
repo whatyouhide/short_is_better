@@ -1,7 +1,11 @@
 source 'https://rubygems.org'
 
+gem 'rack-subdomain', require: 'rack/subdomain'
+
 gem 'sinatra', require: 'sinatra/base'
-gem 'sinatra-contrib', require: %w(sinatra/json sinatra/namespace)
+gem 'sinatra-contrib',
+  require: %w(sinatra/json sinatra/namespace sinatra/config_file)
+
 gem 'redis'
 gem 'bases', '~> 1'
 
