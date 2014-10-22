@@ -3,7 +3,10 @@ require 'digest'
 class ShortIsBetter::Shortener
   # Reserved URLs are parts of the URL that are reserved for the API (e.g.
   # '/api') and can't be used as hashes.
-  RESERVED = %w(api)
+  RESERVED = %w()
+
+  # The default minimum length allowed for the short urls.
+  DEFAULT_MINIMUM_LENGTH = 4
 
   # The characters allowed for use in an URL.
   # For now, these are all the alphanumeric (uppercase and lowercase) characters
@@ -11,12 +14,17 @@ class ShortIsBetter::Shortener
   ALLOWED_CHARS =
     'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789'.split ''
 
+  class << self
+    attr_accessor :minimum_length
+  end
+
   def initialize(long_url, redis_connection)
+    self.class.minimum_length ||= DEFAULT_MINIMUM_LENGTH
     @redis = redis_connection || Redis.new
     @long = long_url
   end
 
-  def shorten_and_store!(length = 4)
+  def shorten_and_store!(length = self.class.minimum_length)
     short = hashed(length)
 
     # Move on to the next version of the short url if this version is a reserved

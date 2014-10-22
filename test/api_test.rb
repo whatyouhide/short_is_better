@@ -2,7 +2,6 @@ require_relative 'test_helper'
 require 'securerandom'
 
 class ApiTest < RackTest
-  parallelize_me!
   app ShortIsBetter::Api
 
   SAMPLE_URL = 'https://github.com'
@@ -42,6 +41,24 @@ class ApiTest < RackTest
       shorten url: url
       assert_last_status 400
     end
+  end
+
+  def test_is_able_to_regenerate_urls_until_a_free_one_is_found
+    old_minimum_length = ShortIsBetter::Shortener.minimum_length
+    ShortIsBetter::Shortener.minimum_length = 1
+
+    lots_of_urls = Array.new(100) { unique_url }.uniq
+
+    short_urls = lots_of_urls.map do |url|
+      shorten url: url
+      assert_last_status 201
+      responded_json['short_url']
+    end
+
+    assert short_urls.any? { |url| url.length > 1 }
+    assert short_urls.any? { |url| url.length == 1 }
+
+    ShortIsBetter::Shortener.minimum_length = old_minimum_length
   end
 
   def test_custom_short_urls_are_allowed
