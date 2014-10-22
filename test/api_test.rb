@@ -6,8 +6,9 @@ class ApiTest < RackTest
   app ShortIsBetter::Api
 
   SAMPLE_URL = 'https://github.com'
+  API_STARTING_ENDPOINT = 'http://api.example.com/v1'
 
-  def test_created_when_a_url_is_created
+  def test_201_created_when_a_url_is_created
     shorten url: unique_url
     assert_last_status 201
     refute_nil responded_json['short_url']
@@ -30,7 +31,7 @@ class ApiTest < RackTest
   end
 
   def test_fails_if_no_url_is_given
-    post '/api/v1/new'
+    post API_STARTING_ENDPOINT + '/new'
     assert_last_status 400
   end
 
@@ -40,7 +41,6 @@ class ApiTest < RackTest
     bad_urls.each do |url|
       shorten url: url
       assert_last_status 400
-      refute_nil responded_json['error']
     end
   end
 
@@ -57,13 +57,12 @@ class ApiTest < RackTest
     # Assert there's a 409 Conflict.
     refute last_response.successful?
     assert_last_status 409
-    refute_nil responded_json['error']
   end
 
   private
 
   def shorten(opts)
-    post '/api/v1/new', opts
+    post API_STARTING_ENDPOINT + '/new', opts
   end
 
   def unique_url

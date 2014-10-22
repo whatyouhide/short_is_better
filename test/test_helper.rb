@@ -4,7 +4,7 @@ require 'bundler/setup'
 Bundler.require(:default, :test)
 
 require 'yaml'
-require_relative '../lib/short_is_better'
+require_relative '../main'
 
 # Change the default Minitest reporter.
 Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
@@ -25,29 +25,24 @@ class RackTest < Minitest::Test
     define_method(:app) { app }
   end
 
-  # Empty the Redis (fakeredis actually) database before each `setup` block.
-  # See http://docs.seattlerb.org/minitest/Minitest/Test/LifecycleHooks.html
-  def before_setup
-    @redis = Redis.new
-    @redis.flushall
-    super
-  end
-
   # Read the fixtures from test/fixtures.yml and load them into the Redis
   # (fakeredis) database.
-  def load_fixtures!
-    @fixtures = {}
-    yaml = YAML.load_file(File.expand_path('fixtures.yml'))
+  def self.load_fixtures!
+    fixtures = {}
+    yaml = YAML.load_file(File.expand_path('../fixtures.yml', __FILE__))
+    redis = Redis.new
 
     yaml['urls'].each do |url|
-      short = ShortIsBetter::Url.new(url, @redis).shorten
-      @fixtures[short] = url
+      short = ShortIsBetter::Shortener.new(url, redis).shorten_and_store!
+      fixtures[short] = url
     end
 
     yaml['custom_urls'].each do |short, long|
-      @redis.set(short, long)
-      @fixtures[short] = long
+      redis.set(short, long)
+      fixtures[short] = long
     end
+
+    define_method(:fixtures) { fixtures }
   end
 
   def assert_last_status(status)
