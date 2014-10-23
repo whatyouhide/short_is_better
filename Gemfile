@@ -1,22 +1,26 @@
 source 'https://rubygems.org'
 
-gem 'rack-subdomain', require: 'rack/subdomain'
+gem 'rack-domain',
+  path: File.join(Dir.home, 'Code/rack-domain'),
+  require: 'rack/domain'
 
 gem 'sinatra', require: 'sinatra/base'
-gem 'sinatra-contrib',
-  require: %w(sinatra/json sinatra/namespace sinatra/config_file)
+gem 'sinatra-contrib', require: [
+  'sinatra/json',
+  'sinatra/namespace',
+  'sinatra/config_file'
+]
 
 gem 'redis'
-gem 'bases', '~> 1'
+gem 'bases', github: 'whatyouhide/bases'
 
 group :test do
   gem 'minitest', '~> 5', require: %w(minitest/autorun minitest/pride)
   gem 'minitest-reporters', '~> 1', require: 'minitest/reporters'
   gem 'rack-test', require: 'rack/test'
-  gem 'fakeredis', github: 'guilleiguaran/fakeredis'
 end
 
 group :development do
   gem 'rake'
-  gem 'pry', require: false
+  gem 'pry'
 end

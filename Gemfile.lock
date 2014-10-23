@@ -1,19 +1,22 @@
 GIT
-  remote: git://github.com/guilleiguaran/fakeredis.git
-  revision: 6a33aa04e0a7d89d4632b1f80344815ae9f9237a
+  remote: git://github.com/whatyouhide/bases.git
+  revision: d03c8a49e2733b80824d06454dd0e9383d6eca6e
   specs:
-    fakeredis (0.5.0)
-      redis (~> 3.0)
+    bases (1.0.1)
+
+PATH
+  remote: /Users/whatyouhide/Code/rack-domain
+  specs:
+    rack-domain (1.0.0)
+      rack (>= 1.5)
 
 GEM
   remote: https://rubygems.org/
   specs:
     ansi (1.4.3)
     backports (3.6.3)
-    bases (1.0.0)
     builder (3.2.2)
     coderay (1.1.0)
-    ipaddress (0.8.0)
     method_source (0.8.2)
     minitest (5.4.2)
     minitest-reporters (1.0.6)
@@ -29,9 +32,6 @@ GEM
     rack (1.5.2)
     rack-protection (1.5.3)
       rack
-    rack-subdomain (0.3.1)
-      ipaddress (~> 0.8.0)
-      rack (>= 1.2.0, <= 2.0.0)
     rack-test (0.6.2)
       rack (>= 1.0)
     rake (10.3.2)
@@ -55,12 +55,11 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bases (~> 1)
-  fakeredis!
+  bases!
   minitest (~> 5)
   minitest-reporters (~> 1)
   pry
-  rack-subdomain
+  rack-domain!
   rack-test
   rake
   redis

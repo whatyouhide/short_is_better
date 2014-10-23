@@ -2,41 +2,33 @@ require 'json'
 
 # This class represents the API exposed at the `api.{domain}` domain. Its job is
 # to store new urls in the database.
-class ShortIsBetter::Api < Sinatra::Base
+class ShortIsBetter::Api < ShortIsBetter::Base
   register Sinatra::Namespace
   helpers Sinatra::JSON
 
-  # Initialize this app (with the next `app` on the Rack stack) and setup a
-  # Redis connection.
-  def initialize(app = nil)
-    @redis = Redis.new
-    super(app)
+  # Version 1 of the API.
+  namespace '/v1' do
+
+    # The main endpoint of the API, used to shorten URLs.
+    post '/new' do
+      ensure_ip_is_under_the_limit!
+      ensure_theres_a_well_formed_url_paramer!
+
+      short, long = params[:short_url], params[:url]
+
+      stored_url = short ? create_custom(short, long) : shorten(long)
+
+      # If an URL has been created, increment the count of stored urls for that
+      # IP.
+      increment_ips_stored_urls if status == 201
+
+      json short_url: stored_url
+    end
   end
 
-  # This API is hooked up to the "api." subdomain of the domain this application
-  # is running on. Everything else results in a 404 error.
-  namespace host_name: /^api\./ do
-
-    # Version 1 of the API.
-    namespace '/v1' do
-
-      # The main endpoint of the api, used to shorten URLs.
-      post '/new' do
-        ensure_theres_a_well_formed_url_paramer!
-        short, long = params[:short_url], params[:url]
-
-        stored_url = short ? create_custom(short, long) : shorten(long)
-        json short_url: stored_url
-      end
-    end
-
-    # Catch every error and return its body as the "message" key of a JSON object.
-    # The most important thing of this handler is that it *keeps the error code
-    # intact*: this way, even if this catches a 404 or 405 error, the Rack cascade
-    # will still keep cascading and the next app will catch the request.
-    error 400..599 do
-      json message: body.join('')
-    end
+  # Catch every error and return its body as the "message" key of a JSON object.
+  error 400..599 do
+    json message: body.join('')
   end
 
   private
@@ -50,6 +42,20 @@ class ShortIsBetter::Api < Sinatra::Base
     halt(400, "'#{url}' isn't a valid url") unless valid_url?(url)
   end
 
+  # Ensure that the requesting IP is under the limit of stored urls per day,
+  # halting with a 429 Too Many Requests error if it's over the limit.
+  def ensure_ip_is_under_the_limit!
+    msg = "The IP address %s has reached its limit for stored urls per day" %
+      [request.ip]
+
+    halt(429, msg) if ip_over_the_limit?
+  end
+
+  # Increment the count of stored urls for the requesting IP address.
+  def increment_ips_stored_urls
+    redis_for_ip_control.incr(request.ip)
+  end
+
   # Try to store a custom short URL. If it succeedes, set the status code to
   # `201 Created` and return the custom short URL, otherwise fail with a `409
   # Conflict` error.
@@ -57,7 +63,7 @@ class ShortIsBetter::Api < Sinatra::Base
   # @param [String] long_url
   # @return [String] The custom short URL
   def create_custom(short_url, long_url)
-    created = @redis.setnx(short_url, long_url)
+    created = redis_for_short_urls.setnx(short_url, long_url)
 
     halt(409, "'#{short_url}' was already taken") unless created
 
@@ -71,7 +77,7 @@ class ShortIsBetter::Api < Sinatra::Base
   # @param [String] long_url
   # @return [String]
   def shorten(long_url)
-    shortener = ShortIsBetter::Shortener.new(params[:url], @redis)
+    shortener = ShortIsBetter::Shortener.new(params[:url], redis_for_short_urls)
     short = shortener.shorten_and_store!
     status (shortener.created? ? 201 : 200)
     short
@@ -79,8 +85,15 @@ class ShortIsBetter::Api < Sinatra::Base
 
   # Whether the given url is a valid url.
   # @param [String] url
-  # @return [bool]
+  # @return [Boolean]
   def valid_url?(url)
     url =~ /\A#{URI::regexp}\z/
+  end
+
+  # Whether this ip has reached the limit of stored urls per day.
+  # @return [Boolean]
+  def ip_over_the_limit?
+    stored_urls = redis_for_ip_control.get(request.ip).to_i
+    stored_urls >= settings.urls_per_ip_per_day
   end
 end

@@ -28,17 +28,23 @@ class RackTest < Minitest::Test
   # Read the fixtures from test/fixtures.yml and load them into the Redis
   # (fakeredis) database.
   def self.load_fixtures!
+    redis_settings = YAML.load_file(File.expand_path('../../config/test.yml', __FILE__))['test']['redis']
+    redis1 = Redis.new(url: redis_settings['short_urls'])
+    redis2 = Redis.new(url: redis_settings['ip_control'])
+
+    redis1.flushall
+    redis2.flushall
+
     fixtures = {}
     yaml = YAML.load_file(File.expand_path('../fixtures.yml', __FILE__))
-    redis = Redis.new
 
     yaml['urls'].each do |url|
-      short = ShortIsBetter::Shortener.new(url, redis).shorten_and_store!
+      short = ShortIsBetter::Shortener.new(url, redis1).shorten_and_store!
       fixtures[short] = url
     end
 
     yaml['custom_urls'].each do |short, long|
-      redis.set(short, long)
+      redis1.set(short, long)
       fixtures[short] = long
     end
 

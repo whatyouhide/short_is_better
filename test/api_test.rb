@@ -87,10 +87,32 @@ class ApiTest < RackTest
     assert_last_status 409
   end
 
+  def test_ips_are_limited_on_the_number_of_urls_created_per_day
+    # Remember the limit before this test, and reset it at the end of it.
+    previous_limit = app.settings.urls_per_ip_per_day
+
+    app.set :urls_per_ip_per_day, 5
+    env_with_ip = { 'REMOTE_ADDR' => '1.2.3.4' }
+
+    # Shorten random URLs until we find one that was not in the database; repeat
+    # 5 times in order to store 5 urls for this ip.
+    5.times do
+      loop do
+        shorten({ url: unique_url }, env_with_ip)
+        break if last_response.status == 201
+      end
+    end
+
+    shorten({ url: 'https://this-is-not-in-the.database' }, env_with_ip)
+    assert_last_status 429 # 429 Too Many Requests
+
+    app.set :urls_per_ip_per_day, previous_limit
+  end
+
   private
 
-  def shorten(opts)
-    post API_STARTING_ENDPOINT + '/new', opts
+  def shorten(params, env = {})
+    post(API_STARTING_ENDPOINT + '/new', params, env)
   end
 
   def unique_url

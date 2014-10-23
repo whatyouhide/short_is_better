@@ -1,14 +1,15 @@
 require 'uri'
 require_relative 'test_helper'
 
+
 class MainServerTest < RackTest
   app ShortIsBetter::MainServer
-  parallelize_me!
   load_fixtures!
 
   def test_basic_redirect
     fixtures.each do |short, long|
       get "/#{short}"
+
       assert last_response.redirect?, 'Response was not a redirect'
 
       follow_redirect!
