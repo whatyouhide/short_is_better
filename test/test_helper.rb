@@ -32,8 +32,8 @@ class RackTest < Minitest::Test
     redis1 = Redis.new(url: redis_settings['short_urls'])
     redis2 = Redis.new(url: redis_settings['ip_control'])
 
-    redis1.flushall
-    redis2.flushall
+    redis1.flushdb
+    redis2.flushdb
 
     fixtures = {}
     yaml = YAML.load_file(File.expand_path('../fixtures.yml', __FILE__))

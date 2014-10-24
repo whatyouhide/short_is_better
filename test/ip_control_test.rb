@@ -3,7 +3,7 @@ require_relative 'test_helper'
 class IpControlTest < Minitest::Test
   def test_reset_class_method
     # Ensure an empty slate.
-    redis.flushall
+    redis.flushdb
 
     random_ips = ips(10)
     random_ips.each do |ip|

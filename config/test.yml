@@ -1,5 +1,5 @@
 test:
   redis:
-    short_urls: redis://localhost:6999
-    ip_control: redis://localhost:7000
+    short_urls: redis://localhost:6999/0
+    ip_control: redis://localhost:6999/1
   urls_per_ip_per_day: 10000

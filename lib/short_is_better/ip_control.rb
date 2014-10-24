@@ -14,6 +14,6 @@ class ShortIsBetter::IpControl
 
   # @todo docs
   def flush!
-    @redis.flushall
+    @redis.flushdb
   end
 end
