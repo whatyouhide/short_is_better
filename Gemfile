@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'rack-domain',
-  path: File.join(Dir.home, 'Code/rack-domain'),
+  github: 'whatyouhide/rack-domain',
   require: 'rack/domain'
 
 gem 'sinatra', require: 'sinatra/base'
@@ -11,8 +11,10 @@ gem 'sinatra-contrib', require: [
   'sinatra/config_file'
 ]
 
-gem 'redis'
+gem 'redis', '~> 3.1'
 gem 'bases', github: 'whatyouhide/bases'
+
+gem 'whenever', '~> 0.9'
 
 group :test do
   gem 'minitest', '~> 5', require: %w(minitest/autorun minitest/pride)

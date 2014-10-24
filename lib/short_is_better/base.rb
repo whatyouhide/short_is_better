@@ -1,3 +1,5 @@
+# @todo generic docs, maybe better naming, maybe some methods can be moved
+# elsewhere (I'm looking at you, redis_for_ip_control).
 class ShortIsBetter::Base < Sinatra::Base
   register Sinatra::ConfigFile
 
