@@ -1,8 +1,8 @@
 # @todo docs
 class ShortIsBetter::IpControl
   # @todo docs
-  def self.reset!
-    new.reset!
+  def self.flush!
+    new.flush!
   end
 
   # Create a new instance of `IpControl` and connect to the proper Redis
@@ -13,7 +13,7 @@ class ShortIsBetter::IpControl
   end
 
   # @todo docs
-  def reset!
+  def flush!
     @redis.flushall
   end
 end
