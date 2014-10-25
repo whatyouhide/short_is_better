@@ -4,6 +4,7 @@ require_relative 'test_helper'
 
 class MainServerTest < RackTest
   app ShortIsBetter::MainServer
+  flush_databases!
   load_fixtures!
 
   def test_basic_redirect

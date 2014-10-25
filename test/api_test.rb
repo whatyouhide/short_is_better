@@ -3,6 +3,7 @@ require 'securerandom'
 
 class ApiTest < RackTest
   app ShortIsBetter::Api
+  flush_databases!
 
   SAMPLE_URL = 'https://github.com'
   API_STARTING_ENDPOINT = 'http://api.example.com/v1'

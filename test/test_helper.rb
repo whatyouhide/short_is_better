@@ -9,42 +9,36 @@ require_relative '../main'
 # Change the default Minitest reporter.
 Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
 
+
 # Simple test class that includes Rack test methods and defines the `app`
 # method, which is used to set the current Rack app to test (inside the test
 # class).
 class RackTest < Minitest::Test
-  include Rack::Test::Methods
-
-  attr_accessor :fixtures
-
-  # DSL-like method that lets you call:
-  #   app MyApp
-  # at the beginning of a RackTest subclass, defining an `app` instance method
-  # that Rack::Test uses to make requests to.
   def self.app(app)
+    self.include(Rack::Test::Methods)
     define_method(:app) { app }
+  end
+
+  def self.flush_databases!
+    set_redis_databases
+    @redis_for_short_urls.flushdb
+    @redis_for_ip_control.flushdb
   end
 
   # Read the fixtures from test/fixtures.yml and load them into the Redis
   # (fakeredis) database.
   def self.load_fixtures!
-    redis_settings = YAML.load_file(File.expand_path('../../config/test.yml', __FILE__))['test']['redis']
-    redis1 = Redis.new(url: redis_settings['short_urls'])
-    redis2 = Redis.new(url: redis_settings['ip_control'])
-
-    redis1.flushdb
-    redis2.flushdb
-
+    set_redis_databases
     fixtures = {}
-    yaml = YAML.load_file(File.expand_path('../fixtures.yml', __FILE__))
+    yaml = load_fixtures_from_yaml_file
 
     yaml['urls'].each do |url|
-      short = ShortIsBetter::Shortener.new(url, redis1).shorten_and_store!
+      short = ShortIsBetter::Shortener.new(url, @redis_for_short_urls).shorten_and_store!
       fixtures[short] = url
     end
 
     yaml['custom_urls'].each do |short, long|
-      redis1.set(short, long)
+      @redis_for_short_urls.set(short, long)
       fixtures[short] = long
     end
 
@@ -54,5 +48,19 @@ class RackTest < Minitest::Test
   def assert_last_status(status)
     assert last_response.status == status,
       "last_response.status is #{last_response.status} instead of #{status}"
+  end
+
+  class << self
+    private
+
+    def set_redis_databases
+      redis_urls = ShortIsBetter::Base.settings.redis
+      @redis_for_short_urls ||= Redis.new(url: redis_urls['short_urls'])
+      @redis_for_ip_control ||= Redis.new(url: redis_urls['ip_control'])
+    end
+
+    def load_fixtures_from_yaml_file
+      YAML.load_file(File.expand_path('../fixtures.yml', __FILE__))
+    end
   end
 end

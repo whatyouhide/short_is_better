@@ -6,6 +6,10 @@ class ShortIsBetter::Api < ShortIsBetter::Base
   register Sinatra::Namespace
   helpers Sinatra::JSON
 
+  before do
+    @ip_control = ShortIsBetter::IpControl.new(request.ip)
+  end
+
   # Version 1 of the API.
   namespace '/v1' do
 
@@ -20,7 +24,8 @@ class ShortIsBetter::Api < ShortIsBetter::Base
 
       # If an URL has been created, increment the count of stored urls for that
       # IP.
-      increment_ips_stored_urls if status == 201
+      # increment_ips_stored_urls if status == 201
+      @ip_control.increment! if status == 201
 
       json short_url: stored_url
     end
@@ -48,12 +53,8 @@ class ShortIsBetter::Api < ShortIsBetter::Base
     msg = "The IP address %s has reached its limit for stored urls per day" %
       [request.ip]
 
-    halt(429, msg) if ip_over_the_limit?
-  end
-
-  # Increment the count of stored urls for the requesting IP address.
-  def increment_ips_stored_urls
-    redis_for_ip_control.incr(request.ip)
+    # halt(429, msg) if ip_over_the_limit?
+    halt(429, msg) unless @ip_control.under_the_limit?
   end
 
   # Try to store a custom short URL. If it succeedes, set the status code to
@@ -88,12 +89,5 @@ class ShortIsBetter::Api < ShortIsBetter::Base
   # @return [Boolean]
   def valid_url?(url)
     url =~ /\A#{URI::regexp}\z/
-  end
-
-  # Whether this ip has reached the limit of stored urls per day.
-  # @return [Boolean]
-  def ip_over_the_limit?
-    stored_urls = redis_for_ip_control.get(request.ip).to_i
-    stored_urls >= settings.urls_per_ip_per_day
   end
 end
