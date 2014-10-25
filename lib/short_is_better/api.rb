@@ -14,17 +14,15 @@ class ShortIsBetter::Api < ShortIsBetter::Base
   namespace '/v1' do
 
     # The main endpoint of the API, used to shorten URLs.
-    post '/new' do
+    post '/new/?' do
       ensure_ip_is_under_the_limit!
       ensure_theres_a_well_formed_url_paramer!
 
       short, long = params[:short_url], params[:url]
-
       stored_url = short ? create_custom(short, long) : shorten(long)
 
-      # If an URL has been created, increment the count of stored urls for that
-      # IP.
-      # increment_ips_stored_urls if status == 201
+      # If an URL has been created, increment the count of stored urls (for that
+      # IP).
       @ip_control.increment! if status == 201
 
       json short_url: stored_url
