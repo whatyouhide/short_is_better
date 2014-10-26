@@ -4,13 +4,14 @@ require 'json'
 # to store new urls in the database.
 class ShortIsBetter::Api < ShortIsBetter::Base
   register Sinatra::Namespace
+  register Sinatra::CrossOrigin
   helpers Sinatra::JSON
 
   # CORS.
   enable :cross_origin
   set :allow_origin, :any
   set :allow_methods, %i(post)
-  set :allow_credentials, true
+  set :allow_credentials, false
   set :max_age, '1728000'
   set :expose_headers, ['Content-Type']
 
@@ -22,6 +23,8 @@ class ShortIsBetter::Api < ShortIsBetter::Base
 
   # Version 1 of the API.
   namespace '/v1' do
+    # Allow preflight requests (for CORS purposes).
+    options('*') {}
 
     # The main endpoint of the API, used to shorten URLs.
     post '/new/?' do
