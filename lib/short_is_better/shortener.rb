@@ -5,9 +5,6 @@ class ShortIsBetter::Shortener
   # '/api') and can't be used as hashes.
   RESERVED = %w()
 
-  # The default minimum length allowed for the short urls.
-  MINIMUM_LENGTH = 4
-
   # The characters allowed for use in an URL.
   # For now, these are all the alphanumeric (uppercase and lowercase) characters
   # except for `[0, O, I, l]`.
@@ -17,9 +14,10 @@ class ShortIsBetter::Shortener
   def initialize(long_url, redis_connection)
     @redis = redis_connection || Redis.new
     @long = long_url
+    @minimum_length = ShortIsBetter::Base.settings.short_url_minimum_length
   end
 
-  def shorten_and_store!(length = MINIMUM_LENGTH)
+  def shorten_and_store!(length = @minimum_length)
     short = hashed(length)
 
     # Move on to the next version of the short url if this version is a reserved

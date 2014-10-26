@@ -52,20 +52,12 @@ class ApiTest < RackTest
   end
 
   def test_is_able_to_regenerate_urls_until_a_free_one_is_found
-    # In this test, we do quite a big no-no: we tamper the code at its core!
-    # We're touching the `MINIMUM_LENGTH` constant of the `Shortener` class
-    # so that we can choose (at runtime) how long the generated short url needs
-    # to be. Doing it in a "clean" way would require to add some code (lik an
-    # attr_accessor) to the `Shortener` class, but changing the code in order to
-    # make tests easier is bad.
-    # Maybe this stuff could be moved to a more general configuration (like
-    # `ShortIsBetter.config`) so that this thing is programmatically exposed,
-    # which could turn in handy.
-    old_minimum_length = ShortIsBetter::Shortener.const_get(:MINIMUM_LENGTH)
-    ShortIsBetter::Shortener.send(:remove_const, :MINIMUM_LENGTH)
-    ShortIsBetter::Shortener.const_set(:MINIMUM_LENGTH, 1)
+    old_minimum_length = ShortIsBetter::Base.settings.short_url_minimum_length
+    ShortIsBetter::Base.settings.short_url_minimum_length = 1
 
-    lots_of_urls = Array.new(100) { unique_url }.uniq
+    lots_of_urls = Array.new(500) { unique_url }
+      .uniq
+      .take(ShortIsBetter::Shortener::ALLOWED_CHARS.size + 1)
 
     short_urls = lots_of_urls.map do |url|
       shorten url: url
@@ -76,8 +68,7 @@ class ApiTest < RackTest
     assert short_urls.any? { |url| url.length > 1 }
     assert short_urls.any? { |url| url.length == 1 }
 
-    ShortIsBetter::Shortener.send(:remove_const, :MINIMUM_LENGTH)
-    ShortIsBetter::Shortener.const_set(:MINIMUM_LENGTH, old_minimum_length)
+    ShortIsBetter::Base.settings.short_url_minimum_length = old_minimum_length
   end
 
   def test_custom_short_urls_are_allowed

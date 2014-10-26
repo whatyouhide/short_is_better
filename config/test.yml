@@ -3,3 +3,4 @@ test:
     short_urls: redis://localhost:6999/0
     ip_control: redis://localhost:6999/1
   urls_per_ip_per_day: 10000
+  short_url_minimum_length: 4
