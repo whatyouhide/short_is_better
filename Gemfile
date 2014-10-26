@@ -26,4 +26,7 @@ end
 group :development do
   gem 'rake'
   gem 'pry'
+  gem 'capistrano', '~> 3.2'
+  gem 'capistrano-rvm', '~> 0.1'
+  gem 'capistrano-bundler', '~> 1.1'
 end
