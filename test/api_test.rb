@@ -15,7 +15,7 @@ class ApiTest < RackTest
   end
 
   def test_doesnt_recreate_an_already_existing_url
-    urls = Array.new(15) { unique_url }.uniq
+    urls = Array.new(5) { unique_url }.uniq
 
     urls.each do |url|
       shorten url: url
@@ -33,6 +33,7 @@ class ApiTest < RackTest
   def test_fails_if_no_url_is_given
     post API_STARTING_ENDPOINT + '/new'
     assert_last_status 400
+    assert_error_message "parameter is missing"
   end
 
   def test_fails_if_the_url_isnt_well_formed
@@ -41,12 +42,13 @@ class ApiTest < RackTest
     bad_urls.each do |url|
       shorten url: url
       assert_last_status 400
+      assert_error_message "isn't a valid url"
     end
   end
 
   def test_the_new_endpoint_works_with_a_trailing_slash
     post API_STARTING_ENDPOINT + '/new/', url: 'http://trailing-slash.com'
-    assert_last_status 201
+    assert last_response.successful?
   end
 
   def test_is_able_to_regenerate_urls_until_a_free_one_is_found
@@ -84,13 +86,18 @@ class ApiTest < RackTest
     assert_equal responded_json['short_url'], 'maccheroni'
   end
 
+  def test_same_custom_url_for_same_long_url_doesnt_fail
+    shorten url: SAMPLE_URL, short_url: 'foobarbaz'
+    shorten url: SAMPLE_URL, short_url: 'foobarbaz'
+    assert_last_status 200
+    assert_equal responded_json['short_url'], 'foobarbaz'
+  end
+
   def test_fails_if_the_custom_url_is_already_taken
     shorten url: SAMPLE_URL, short_url: 'taken'
-    shorten url: SAMPLE_URL, short_url: 'taken'
-
-    # Assert there's a 409 Conflict.
-    refute last_response.successful?
+    shorten url: SAMPLE_URL + '/bar', short_url: 'taken'
     assert_last_status 409
+    assert_error_message 'already taken'
   end
 
   def test_ips_are_limited_on_the_number_of_urls_created_per_day
@@ -111,11 +118,19 @@ class ApiTest < RackTest
 
     shorten({ url: 'https://this-is-not-in-the.database' }, env_with_ip)
     assert_last_status 429 # 429 Too Many Requests
+    assert_error_message 'reached its limit'
 
     app.set :urls_per_ip_per_day, previous_limit
   end
 
   private
+
+  def assert_error_message(error_msg, msg = nil)
+    refute_nil responded_json['message']
+    assert_includes responded_json['message'],
+      error_msg,
+      (msg || 'The responded JSON does not include the given message')
+  end
 
   def shorten(params, env = {})
     post(API_STARTING_ENDPOINT + '/new', params, env)

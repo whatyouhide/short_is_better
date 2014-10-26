@@ -6,6 +6,8 @@ class ShortIsBetter::Api < ShortIsBetter::Base
   register Sinatra::Namespace
   helpers Sinatra::JSON
 
+  # Every time a request is received, instantiate a new `IpControl` object with
+  # the IP of that request.
   before do
     @ip_control = ShortIsBetter::IpControl.new(request.ip)
   end
@@ -15,14 +17,16 @@ class ShortIsBetter::Api < ShortIsBetter::Base
 
     # The main endpoint of the API, used to shorten URLs.
     post '/new/?' do
+      # Some validation checks.
       ensure_ip_is_under_the_limit!
       ensure_theres_a_well_formed_url_paramer!
 
+      # Url storing.
       short, long = params[:short_url], params[:url]
       stored_url = short ? create_custom(short, long) : shorten(long)
 
-      # If an URL has been created, increment the count of stored urls (for that
-      # IP).
+      # If the URL has been created, increment the count of stored urls (for
+      # that IP).
       @ip_control.increment! if status == 201
 
       json short_url: stored_url
@@ -41,7 +45,7 @@ class ShortIsBetter::Api < ShortIsBetter::Base
   # @return [void]
   def ensure_theres_a_well_formed_url_paramer!
     url = params[:url]
-    halt(400, "The 'url' paramer is missing") unless url
+    halt(400, "The 'url' parameter is missing") unless url
     halt(400, "'#{url}' isn't a valid url") unless valid_url?(url)
   end
 
@@ -51,22 +55,29 @@ class ShortIsBetter::Api < ShortIsBetter::Base
     msg = "The IP address %s has reached its limit for stored urls per day" %
       [request.ip]
 
-    # halt(429, msg) if ip_over_the_limit?
     halt(429, msg) unless @ip_control.under_the_limit?
   end
 
   # Try to store a custom short URL. If it succeedes, set the status code to
   # `201 Created` and return the custom short URL, otherwise fail with a `409
-  # Conflict` error.
+  # Conflict` error. If the previous long url stored at `short_url` is the same
+  # as the current `long_url`, a 200 OK response is returned.
   # @param [String] short_url
   # @param [String] long_url
   # @return [String] The custom short URL
   def create_custom(short_url, long_url)
-    created = redis_for_short_urls.setnx(short_url, long_url)
+    existing, created = redis_for_short_urls.multi do
+      redis_for_short_urls.get(short_url)
+      redis_for_short_urls.setnx(short_url, long_url)
+    end
 
-    halt(409, "'#{short_url}' was already taken") unless created
+    if !created && existing != long_url
+      halt(409, "'#{short_url}' was already taken")
+    end
 
-    status 201
+    # The long url at `short_url` could have been the same as `long_url`, in
+    # which case we return a 200 OK instead of a 201 Created.
+    status(created ? 201 : 200)
     short_url
   end
 
