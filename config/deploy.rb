@@ -15,7 +15,7 @@ server 'ze.lc', roles: %w(app), user: fetch(:user)
 # Deployment.
 set :deploy_via, :copy
 set :deploy_to, "/home/#{fetch(:user)}/#{fetch(:application)}_#{fetch(:stage)}"
-set :linked_files, %w(config/production.yml)
+set :linked_files, %w(config/production.yml config/staging.yml)
 set :linked_dirs, %w(logs public tmp vendor/bundle)
 
 # RVM.

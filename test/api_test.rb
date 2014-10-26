@@ -44,6 +44,11 @@ class ApiTest < RackTest
     end
   end
 
+  def test_the_new_endpoint_works_with_a_trailing_slash
+    post API_STARTING_ENDPOINT + '/new/', url: 'http://trailing-slash.com'
+    assert_last_status 201
+  end
+
   def test_is_able_to_regenerate_urls_until_a_free_one_is_found
     # In this test, we do quite a big no-no: we tamper the code at its core!
     # We're touching the `MINIMUM_LENGTH` constant of the `Shortener` class

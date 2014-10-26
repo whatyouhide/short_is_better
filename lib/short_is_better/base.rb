@@ -4,6 +4,7 @@ class ShortIsBetter::Base < Sinatra::Base
   register Sinatra::ConfigFile
 
   set :root, File.expand_path('../../..', __FILE__)
+  set :environments, %w(development test production staging)
 
   config_file 'config/*.yml'
 
