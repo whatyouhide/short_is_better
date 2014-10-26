@@ -5,6 +5,7 @@ gem 'rack-domain',
   require: 'rack/domain'
 
 gem 'sinatra', require: 'sinatra/base'
+gem 'sinatra-cross_origin', require: 'sinatra/cross_origin'
 gem 'sinatra-contrib', require: [
   'sinatra/json',
   'sinatra/namespace',

@@ -6,6 +6,14 @@ class ShortIsBetter::Api < ShortIsBetter::Base
   register Sinatra::Namespace
   helpers Sinatra::JSON
 
+  # CORS.
+  enable :cross_origin
+  set :allow_origin, :any
+  set :allow_methods, %i(post)
+  set :allow_credentials, true
+  set :max_age, '1728000'
+  set :expose_headers, ['Content-Type']
+
   # Every time a request is received, instantiate a new `IpControl` object with
   # the IP of that request.
   before do
