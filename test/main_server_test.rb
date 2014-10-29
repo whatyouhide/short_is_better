@@ -3,7 +3,7 @@ require_relative 'test_helper'
 
 
 class MainServerTest < RackTest
-  app ShortIsBetter::MainServer
+  app MainServer
   flush_databases!
   load_fixtures!
 

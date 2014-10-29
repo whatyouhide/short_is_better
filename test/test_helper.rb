@@ -33,7 +33,7 @@ class RackTest < Minitest::Test
     yaml = load_fixtures_from_yaml_file
 
     yaml['urls'].each do |url|
-      short = ShortIsBetter::Shortener.new(url, @redis_for_short_urls).shorten_and_store!
+      short = Shortener.new(url, @redis_for_short_urls).shorten_and_store!
       fixtures[short] = url
     end
 
@@ -54,7 +54,7 @@ class RackTest < Minitest::Test
     private
 
     def set_redis_databases
-      redis_urls = ShortIsBetter::Base.settings.redis
+      redis_urls = Base.settings.redis
       @redis_for_short_urls ||= Redis.new(url: redis_urls['short_urls'])
       @redis_for_ip_control ||= Redis.new(url: redis_urls['ip_control'])
     end

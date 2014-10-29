@@ -2,7 +2,7 @@ require 'json'
 
 # This class represents the API exposed at the `api.{domain}` domain. Its job is
 # to store new urls in the database.
-class ShortIsBetter::Api < ShortIsBetter::Base
+class Api < Base
   register Sinatra::Namespace
   register Sinatra::CrossOrigin
   helpers Sinatra::JSON
@@ -18,7 +18,7 @@ class ShortIsBetter::Api < ShortIsBetter::Base
   # Every time a request is received, instantiate a new `IpControl` object with
   # the IP of that request.
   before do
-    @ip_control = ShortIsBetter::IpControl.new(request.ip)
+    @ip_control = IpControl.new(request.ip)
   end
 
   # Version 1 of the API.
@@ -98,7 +98,7 @@ class ShortIsBetter::Api < ShortIsBetter::Base
   # @param [String] long_url
   # @return [String]
   def shorten(long_url)
-    shortener = ShortIsBetter::Shortener.new(params[:url], redis_for_short_urls)
+    shortener = Shortener.new(params[:url], redis_for_short_urls)
     short = shortener.shorten_and_store!
     status (shortener.created? ? 201 : 200)
     short

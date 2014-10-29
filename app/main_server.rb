@@ -1,5 +1,5 @@
 # The main server class. This can be run as a Rack application.
-class ShortIsBetter::MainServer < ShortIsBetter::Base
+class MainServer < Base
   # Redirect to a regular URL from a short url.
   # GET /shorturl
   get '/:short_url' do |short_url|

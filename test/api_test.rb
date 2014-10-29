@@ -2,7 +2,7 @@ require_relative 'test_helper'
 require 'securerandom'
 
 class ApiTest < RackTest
-  app ShortIsBetter::Api
+  app Api
   flush_databases!
 
   SAMPLE_URL = 'https://github.com'
@@ -52,12 +52,12 @@ class ApiTest < RackTest
   end
 
   def test_is_able_to_regenerate_urls_until_a_free_one_is_found
-    old_minimum_length = ShortIsBetter::Base.settings.short_url_minimum_length
-    ShortIsBetter::Base.settings.short_url_minimum_length = 1
+    old_minimum_length = Base.settings.short_url_minimum_length
+    Base.settings.short_url_minimum_length = 1
 
     lots_of_urls = Array.new(500) { unique_url }
       .uniq
-      .take(ShortIsBetter::Shortener::ALLOWED_CHARS.size + 1)
+      .take(Shortener::ALLOWED_CHARS.size + 1)
 
     short_urls = lots_of_urls.map do |url|
       shorten url: url
@@ -68,7 +68,7 @@ class ApiTest < RackTest
     assert short_urls.any? { |url| url.length > 1 }
     assert short_urls.any? { |url| url.length == 1 }
 
-    ShortIsBetter::Base.settings.short_url_minimum_length = old_minimum_length
+    Base.settings.short_url_minimum_length = old_minimum_length
   end
 
   def test_custom_short_urls_are_allowed

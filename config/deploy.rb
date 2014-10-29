@@ -13,10 +13,10 @@ set :user, 'deploy'
 server 'ze.lc', roles: %w(app), user: fetch(:user)
 
 # Deployment.
-set :deploy_via, :copy
+set :deploy_via, :remote_cache
 set :deploy_to, "/home/#{fetch(:user)}/#{fetch(:application)}_#{fetch(:stage)}"
-set :linked_files, %W(config/#{fetch(:stage)}.yml)
-set :linked_dirs, %w(logs public tmp vendor/bundle)
+set :linked_files, %W(config/environments/#{fetch(:stage)}.yml)
+set :linked_dirs, %w(public tmp vendor/bundle)
 
 # RVM.
 set :rvm_type, :system

@@ -1,7 +1,7 @@
 # This class provides facilities for dealing with IP addresses control: checking
 # if an IP address stored too many urls, resetting the stored urls per IP (used
 # for cronjobs) and so on.
-class ShortIsBetter::IpControl
+class IpControl
   # Remove all the keys in the designated Redis database, which results in
   # resetting the stored urls per IP per day.
   # @return [void]
@@ -16,7 +16,7 @@ class ShortIsBetter::IpControl
   # @param [String] ip The IP address of the current request, usually.
   def initialize(ip = nil)
     @ip = ip unless ip.nil?
-    @settings = ShortIsBetter::Api.settings
+    @settings = Api.settings
     @redis = Redis.new(url: @settings.redis['ip_control'])
   end
 

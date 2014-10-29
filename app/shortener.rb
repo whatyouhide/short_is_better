@@ -1,6 +1,6 @@
 require 'digest'
 
-class ShortIsBetter::Shortener
+class Shortener
   # Reserved URLs are parts of the URL that are reserved for the API (e.g.
   # '/api') and can't be used as hashes.
   RESERVED = %w()
@@ -14,7 +14,7 @@ class ShortIsBetter::Shortener
   def initialize(long_url, redis_connection)
     @redis = redis_connection || Redis.new
     @long = long_url
-    @minimum_length = ShortIsBetter::Base.settings.short_url_minimum_length
+    @minimum_length = Base.settings.short_url_minimum_length
   end
 
   def shorten_and_store!(length = @minimum_length)

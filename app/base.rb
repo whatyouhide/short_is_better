@@ -1,14 +1,13 @@
 # @todo generic docs, maybe better naming, maybe some methods can be moved
 # elsewhere (I'm looking at you, redis_for_ip_control).
-class ShortIsBetter::Base < Sinatra::Base
+class Base < Sinatra::Base
   register Sinatra::ConfigFile
 
-  set :root, File.expand_path('../../..', __FILE__)
+  set :root, File.expand_path('../../', __FILE__)
   set :environments, %w(development test production staging)
   enable :logging
 
-  config_file 'config/*.yml'
-
+  config_file 'config/environments/*.yml'
 
   protected
 
