@@ -14,6 +14,9 @@ Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
 # method, which is used to set the current Rack app to test (inside the test
 # class).
 class RackTest < Minitest::Test
+  SAMPLE_URL = 'https://github.com'
+  API_STARTING_ENDPOINT = 'http://api.example.com/v1'
+
   def self.app(app)
     self.include(Rack::Test::Methods)
     define_method(:app) { app }
@@ -48,6 +51,12 @@ class RackTest < Minitest::Test
   def assert_last_status(status)
     assert last_response.status == status,
       "last_response.status is #{last_response.status} instead of #{status}"
+  end
+
+  protected
+
+  def unique_url
+    SAMPLE_URL + '/' + SecureRandom.hex
   end
 
   class << self

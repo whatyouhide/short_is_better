@@ -1,8 +1,10 @@
-# @todo generic docs, maybe better naming, maybe some methods can be moved
-# elsewhere (I'm looking at you, redis_for_ip_control).
+# The base class which inherits from Sinatra::Base. All the Sinatra apps that
+# form this application inherit from this class, which sets up some common
+# options and useful methods.
 class Base < Sinatra::Base
   register Sinatra::ConfigFile
 
+  # Configurations.
   set :root, File.expand_path('../../', __FILE__)
   set :environments, %w(development test production staging)
   enable :logging

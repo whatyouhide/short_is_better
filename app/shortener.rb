@@ -12,7 +12,7 @@ class Shortener
     'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789'.split ''
 
   def initialize(long_url, redis_connection)
-    @redis = redis_connection || Redis.new
+    @redis = redis_connection
     @long = long_url
     @minimum_length = Base.settings.short_url_minimum_length
   end

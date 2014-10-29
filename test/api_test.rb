@@ -5,9 +5,6 @@ class ApiTest < RackTest
   app Api
   flush_databases!
 
-  SAMPLE_URL = 'https://github.com'
-  API_STARTING_ENDPOINT = 'http://api.example.com/v1'
-
   def test_201_created_when_a_url_is_created
     shorten url: unique_url
     assert_last_status 201
@@ -49,26 +46,6 @@ class ApiTest < RackTest
   def test_the_new_endpoint_works_with_a_trailing_slash
     post API_STARTING_ENDPOINT + '/new/', url: 'http://trailing-slash.com'
     assert last_response.successful?
-  end
-
-  def test_is_able_to_regenerate_urls_until_a_free_one_is_found
-    old_minimum_length = Base.settings.short_url_minimum_length
-    Base.settings.short_url_minimum_length = 1
-
-    lots_of_urls = Array.new(500) { unique_url }
-      .uniq
-      .take(Shortener::ALLOWED_CHARS.size + 1)
-
-    short_urls = lots_of_urls.map do |url|
-      shorten url: url
-      assert_last_status 201
-      responded_json['short_url']
-    end
-
-    assert short_urls.any? { |url| url.length > 1 }
-    assert short_urls.any? { |url| url.length == 1 }
-
-    Base.settings.short_url_minimum_length = old_minimum_length
   end
 
   def test_custom_short_urls_are_allowed
@@ -125,10 +102,6 @@ class ApiTest < RackTest
 
   def shorten(params, env = {})
     post(API_STARTING_ENDPOINT + '/new', params, env)
-  end
-
-  def unique_url
-    SAMPLE_URL + '/' + SecureRandom.hex
   end
 
   def responded_json
