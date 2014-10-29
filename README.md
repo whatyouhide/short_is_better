@@ -1,5 +1,7 @@
 # Short is better (isn't it?)
 
+[![Build Status](https://travis-ci.org/whatyouhide/short_is_better.svg)](https://travis-ci.org/whatyouhide/short_is_better)
+
 short-is-better is a simple URL shortener written in Ruby using the
 [Sinatra][sinatra] web framework and the [Redis][redis] database.
 
