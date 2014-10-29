@@ -51,7 +51,7 @@ class Shortener
   # @param [Fixnum]
   # @return [String]
   def hashed(length, charset = ALLOWED_CHARS)
-    @hex_digest ||= Digest::MD5.hexdigest(@long)
+    @hex_digest ||= Digest::SHA2.hexdigest(@long)
     @stream ||= Bases[@hex_digest].in_hex.to_base(charset)
 
     @stream.slice(0, length)
