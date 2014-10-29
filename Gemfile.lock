@@ -54,6 +54,7 @@ GEM
     rake (10.3.2)
     redis (3.1.0)
     ruby-progressbar (1.6.0)
+    simpleidn (0.0.5)
     sinatra (1.4.5)
       rack (~> 1.4)
       rack-protection (~> 1.4)
@@ -90,6 +91,7 @@ DEPENDENCIES
   rack-test
   rake
   redis (~> 3.1)
+  simpleidn
   sinatra
   sinatra-contrib
   sinatra-cross_origin

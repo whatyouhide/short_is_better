@@ -108,6 +108,6 @@ class Api < Base
   # @param [String] url
   # @return [Boolean]
   def valid_url?(url)
-    url =~ /\A#{URI::regexp}\z/
+    SimpleIDN.to_ascii(url) =~ /\A#{URI::regexp}\z/
   end
 end

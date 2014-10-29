@@ -43,6 +43,16 @@ class ApiTest < RackTest
     end
   end
 
+  def test_handles_idn_urls_without_errors
+    idn_urls = %w(http://見.香港/ http://ciò.com/)
+
+    idn_urls.each do |url|
+      shorten url: url
+      assert last_response.successful?,
+        "Last response wasn't successful (#{last_response.status} status)"
+    end
+  end
+
   def test_the_new_endpoint_works_with_a_trailing_slash
     post API_STARTING_ENDPOINT + '/new/', url: 'http://trailing-slash.com'
     assert last_response.successful?

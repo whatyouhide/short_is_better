@@ -12,6 +12,8 @@ gem 'sinatra-contrib', require: [
   'sinatra/config_file'
 ]
 
+gem 'simpleidn'
+
 gem 'redis', '~> 3.1'
 gem 'bases', github: 'whatyouhide/bases'
 
