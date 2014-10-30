@@ -2,6 +2,9 @@ require_relative 'test_helper'
 require 'securerandom'
 
 class ApiTest < RackTest
+  # Yeah I suck but Redis isn't helping.
+  i_suck_and_my_tests_are_order_dependent!
+
   app Api
   flush_databases!
 
@@ -12,7 +15,8 @@ class ApiTest < RackTest
   end
 
   def test_doesnt_recreate_an_already_existing_url
-    urls = Array.new(5) { unique_url }.uniq
+    urls = Array.new(3) { unique_url }.uniq
+    urls += %w(http://見.香港/ http://ciò.com/ https://cioè.com)
 
     urls.each do |url|
       shorten url: url
@@ -34,7 +38,7 @@ class ApiTest < RackTest
   end
 
   def test_fails_if_the_url_isnt_well_formed
-    bad_urls = %W(no-url bad foo/:/bar #{"hey there"})
+    bad_urls = %W(no-url bad foo/:/bar #{'hey there'})
 
     bad_urls.each do |url|
       shorten url: url
@@ -48,8 +52,7 @@ class ApiTest < RackTest
 
     idn_urls.each do |url|
       shorten url: url
-      assert last_response.successful?,
-        "Last response wasn't successful (#{last_response.status} status)"
+      assert last_response.successful?
     end
   end
 
@@ -79,26 +82,22 @@ class ApiTest < RackTest
   end
 
   def test_ips_are_limited_on_the_number_of_urls_created_per_day
-    # Remember the limit before this test, and reset it at the end of it.
-    previous_limit = app.settings.urls_per_ip_per_day
+    with_settings(urls_per_ip_per_day: 5) do
+      env_with_ip = { 'REMOTE_ADDR' => '1.2.3.4' }
 
-    app.set :urls_per_ip_per_day, 5
-    env_with_ip = { 'REMOTE_ADDR' => '1.2.3.4' }
-
-    # Shorten random URLs until we find one that was not in the database; repeat
-    # 5 times in order to store 5 urls for this ip.
-    5.times do
-      loop do
-        shorten({ url: unique_url }, env_with_ip)
-        break if last_response.status == 201
+      # Shorten random URLs until we find one that was not in the database;
+      # repeat 5 times in order to store 5 urls for this ip.
+      5.times do
+        loop do
+          shorten({ url: unique_url }, env_with_ip)
+          break if last_response.status == 201
+        end
       end
+
+      shorten({ url: 'https://this-is-not-in-the.database' }, env_with_ip)
+      assert_last_status 429
+      assert_error_message 'reached its limit'
     end
-
-    shorten({ url: 'https://this-is-not-in-the.database' }, env_with_ip)
-    assert_last_status 429 # 429 Too Many Requests
-    assert_error_message 'reached its limit'
-
-    app.set :urls_per_ip_per_day, previous_limit
   end
 
   private

@@ -53,6 +53,24 @@ class RackTest < Minitest::Test
       "last_response.status is #{last_response.status} instead of #{status}"
   end
 
+  def with_settings(app_or_hash, hash_if_app = nil, &block)
+    if hash_if_app.nil?
+      hash = app_or_hash
+      app = self.app
+    else
+      app = app_or_hash
+      hash = hash_if_app
+    end
+
+    previous_hash = hash.keys.reduce({}) do |acc, sett|
+      acc.merge({ sett => app.settings.send(sett) })
+    end
+
+    hash.each { |sett, val| app.set(sett, val) }
+    yield
+    previous_hash.each { |sett, val| app.set(sett, val) }
+  end
+
   protected
 
   def unique_url

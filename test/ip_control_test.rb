@@ -9,35 +9,31 @@ class IpControlTest < RackTest
   end
 
   def test_reset_class_method
-    # Ensure an empty slate.
     @redis.flushdb
 
     size = 10
     (Array.new(size) { random_ip }).each { |ip| @redis.incr(ip) }
 
-    assert @redis.keys.size == size
+    assert_equal size, @redis.keys.size
     IpControl.flush!
     assert_empty @redis.keys
   end
 
   def test_under_the_limit?
-    api = Api
     limit = 5
-    old_limit = api.settings.urls_per_ip_per_day
-    api.settings.urls_per_ip_per_day = limit
-
     ip = '237.164.194.0'
-    ip_control = IpControl.new(ip)
 
-    (limit - 1).times do
+    with_settings(Api, urls_per_ip_per_day: limit) do
+      ip_control = IpControl.new(ip)
+
+      (limit - 1).times do
+        @redis.incr(ip)
+        assert ip_control.under_the_limit?, 'Should be under'
+      end
+
       @redis.incr(ip)
-      assert ip_control.under_the_limit?, 'Should be under'
+      refute ip_control.under_the_limit?, 'Should be over'
     end
-
-    @redis.incr(ip)
-    refute ip_control.under_the_limit?, 'Should be over'
-
-    api.settings.urls_per_ip_per_day = old_limit
   end
 
   def test_increment!
