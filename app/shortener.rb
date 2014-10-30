@@ -31,13 +31,16 @@ class Shortener
       @redis.get(short)
     end
 
+    # As per #17, the `existing` string is extracted with an US-ASCII encoding
+    # instead of UTF8.
+    existing = existing.force_encoding('utf-8')
+
     # If it has been created or it's already there and the corresponding url is
-    # the same as the current one, return that short url.
+    # the same as the current one, return that short url; otherwise, increment
+    # the length of the hashed url.
     if @created || existing == @long
       short
     else
-      # The short url was taken by another long url, so move on to the next short
-      # url and try again.
       shorten_and_store!(length + 1)
     end
   end
@@ -48,8 +51,6 @@ class Shortener
 
   private
 
-  # @param [Fixnum]
-  # @return [String]
   def hashed(length, charset = ALLOWED_CHARS)
     @hex_digest ||= Digest::SHA2.hexdigest(@long)
     @stream ||= Bases[@hex_digest].in_hex.to_base(charset)
