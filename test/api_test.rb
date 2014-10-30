@@ -44,7 +44,7 @@ class ApiTest < RackTest
   end
 
   def test_handles_idn_urls_without_errors
-    idn_urls = %w(http://見.香港/ http://ciò.com/)
+    idn_urls = %w(http://見.香港/ http://ciò.com/ https://cioè.com)
 
     idn_urls.each do |url|
       shorten url: url

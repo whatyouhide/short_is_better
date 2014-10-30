@@ -29,7 +29,7 @@ class RackTest < Minitest::Test
   end
 
   # Read the fixtures from test/fixtures.yml and load them into the Redis
-  # (fakeredis) database.
+  # database.
   def self.load_fixtures!
     set_redis_databases
     fixtures = {}
