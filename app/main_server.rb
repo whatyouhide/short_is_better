@@ -4,6 +4,6 @@ class MainServer < Base
   # GET /shorturl
   get '/:short_url' do |short_url|
     url = redis_for_short_urls.get(short_url) || not_found
-    redirect url
+    redirect url, 301
   end
 end
